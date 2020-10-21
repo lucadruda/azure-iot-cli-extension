@@ -100,6 +100,19 @@ def _load_central_devices_help():
             --app-id {appid}
             --device-id {deviceid}
     """
+    helps[
+        "iot central device simulate"
+    ] = """
+        type: command
+        short-summary: Simulate a device in IoT Central
+
+        examples:
+        - name: Simulate a device
+          text: >
+            az iot central device simulate
+            --app-id {appid}
+            --device-id {deviceid}
+    """
 
     helps[
         "iot central device show-credentials"

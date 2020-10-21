@@ -82,6 +82,7 @@ def load_central_commands(self, _):
         cmd_group.show_command("show", "get_device")
         cmd_group.command("create", "create_device")
         cmd_group.command("delete", "delete_device")
+        cmd_group.command("simulate", "simulate_device")
         cmd_group.command("registration-info", "registration_info")
         cmd_group.command("show-credentials", "get_credentials")
         cmd_group.command("compute-device-key", "compute_device_key")

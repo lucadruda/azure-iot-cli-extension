@@ -47,6 +47,85 @@ def create_device(
         central_dns_suffix=central_dns_suffix,
     )
 
+def simulate_device(cmd,app_id:str,device_id:str,device_name=None,instance_of=None,token=None,
+    central_dns_suffix=CENTRAL_ENDPOINT):
+    provider = CentralDeviceProvider(cmd=cmd, app_id=app_id, token=token)
+    try:
+        device = provider.get_device(device_id,central_dns_suffix)
+    except:
+        print('Not found')
+        if not instance_of:
+            raise CLIError('Device does not exist. Must pass a model Id to create it during simulation')
+            exit(1)
+        else:
+            if not device_name:
+                device_name = device_id
+            device = provider.create_device(device_id,device_name,instance_of)
+    credentials=provider.get_device_credentials(device_id)
+    import asyncio
+    from random import randint
+    from iotc import IOTCConnectType, IOTCLogLevel, IOTCEvents
+    from iotc.aio import IoTCClient
+
+    scope_id = credentials['idScope']
+    key = credentials['symmetricKey']['primaryKey']
+
+    # optional model Id for auto-provisioning
+    try:
+        model_id = instance_of
+    except:
+        model_id = None
+
+
+    async def on_props(propName, propValue):
+        print(propValue)
+        return True
+
+
+    async def on_commands(command, ack):
+        print(command.name)
+        await ack(command.name, 'Command received', command.request_id)
+
+    async def on_enqueued_commands(command_name,command_data):
+        print(command_name)
+        print(command_data)
+
+    # change connect type to reflect the used key (device or group)
+    client = IoTCClient(device_id, scope_id,
+                    IOTCConnectType.IOTC_CONNECT_DEVICE_KEY, key)
+    if model_id != None:
+        client.set_model_id(model_id)
+
+    client.set_log_level(IOTCLogLevel.IOTC_LOGGING_ALL)
+    client.on(IOTCEvents.IOTC_PROPERTIES, on_props)
+    client.on(IOTCEvents.IOTC_COMMAND, on_commands)
+    client.on(IOTCEvents.IOTC_ENQUEUED_COMMAND, on_enqueued_commands)
+
+    # iotc.setQosLevel(IOTQosLevel.IOTC_QOS_AT_MOST_ONCE)
+
+    async def command_loop(device_client):
+        while True:
+            # Wait for unknown method calls
+            method_request = (await device_client.receive_method_request())
+            print('Received command {}'.format(method_request.name))
+            await device_client.send_method_response(MethodResponse.create_from_method_request(
+                method_request, 200, {
+                    'result': True, 'data': 'Command received'}
+            ))
+
+    async def main():
+        await client.connect()
+        while client.is_connected():
+            await client.send_telemetry({
+                'temperature': str(randint(20, 45)),
+                'pressure': str(randint(20, 45))
+            })
+            await asyncio.sleep(3)
+        
+
+    asyncio.run(main())
+    
+    
 
 def delete_device(
     cmd, app_id: str, device_id: str, token=None, central_dns_suffix=CENTRAL_ENDPOINT,
