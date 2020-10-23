@@ -13,6 +13,10 @@ central_device_ops = CliCommandType(
     operations_tmpl="azext_iot.central.commands_device#{}"
 )
 
+central_edge_ops = CliCommandType(
+    operations_tmpl="azext_iot.central.commands_edge#{}"
+)
+
 central_device_templates_ops = CliCommandType(
     operations_tmpl="azext_iot.central.commands_device_template#{}"
 )
@@ -109,6 +113,23 @@ def load_central_commands(self, _):
     ) as cmd_group:
         cmd_group.show_command(
             "show", "device_twin_show",
+        )
+    
+    with self.command_group("iot central edge", command_type=central_edge_ops,is_preview=True) as cmd_group:
+        cmd_group.command("set-modules", "iot_central_edge_set_modules")
+
+    with self.command_group(
+        "iot central edge deployment", command_type=central_edge_ops,is_preview=True
+    ) as cmd_group:
+        cmd_group.command("show-metric", "iot_central_edge_deployment_metric_show")
+        cmd_group.command("create", "iot_central_edge_deployment_create")
+        cmd_group.show_command("show", "iot_hub_configuration_show")
+        cmd_group.command("list", "iot_central_edge_deployment_list")
+        cmd_group.command("delete", "iot_hub_configuration_delete")
+        cmd_group.generic_update_command(
+            "update",
+            getter_name="iot_hub_configuration_show",
+            setter_name="iot_hub_configuration_update",
         )
 
     # TODO: Delete this by end of Dec 2020

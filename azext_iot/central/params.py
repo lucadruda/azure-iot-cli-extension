@@ -138,6 +138,13 @@ def load_central_arguments(self, _):
             "Example: ['manufacturer=text,fanSpeed=number]",
         )
 
+    with self.argument_context("iot central edge set-modules") as context:
+        context.argument(
+            "content",
+            options_list=["--content", "-c"],
+            help="IoT Edge deployment content. Provide file path or raw json.",
+        )
+
     with self.argument_context("iot central user") as context:
         context.argument(
             "tenant_id",
