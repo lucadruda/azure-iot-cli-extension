@@ -100,18 +100,24 @@ def _load_central_devices_help():
             --app-id {appid}
             --device-id {deviceid}
     """
+
     helps[
         "iot central device simulate"
     ] = """
         type: command
-        short-summary: Simulate a device in IoT Central
+        short-summary: Simulate a device in IoT Central.
+        long-summary: |
+            While the device simulation is running, the device will automatically receive
+            and acknowledge properties and commands.
+            Telemetry will be sent if "telemetry" parameter is passed to command.
+
+            Note: The command by default will set content-type to application/json and content-encoding
+            to utf-8. This can be overriden.
 
         examples:
         - name: Simulate a device
           text: >
-            az iot central device simulate
-            --app-id {appid}
-            --device-id {deviceid}
+            az iot central device simulate -n {appid} -d {deviceid} -t
     """
 
     helps[

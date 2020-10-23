@@ -47,7 +47,7 @@ def create_device(
         central_dns_suffix=central_dns_suffix,
     )
 
-def simulate_device(cmd,app_id:str,device_id:str,device_name=None,instance_of=None,token=None,
+def simulate_device(cmd,app_id:str,device_id:str,telemetry=None,properties=None,device_name=None,instance_of=None,token=None,
     central_dns_suffix=CENTRAL_ENDPOINT):
     provider = CentralDeviceProvider(cmd=cmd, app_id=app_id, token=token)
     try:
@@ -69,6 +69,28 @@ def simulate_device(cmd,app_id:str,device_id:str,device_name=None,instance_of=No
 
     scope_id = credentials['idScope']
     key = credentials['symmetricKey']['primaryKey']
+
+    def get_random_string(length):
+        letters = string.ascii_lowercase
+        return ''.join(choice(letters) for i in range(length))
+
+    if telemetry:
+        telemetry_obj = {}
+        fields = telemetry.split(',')
+        if len(fields) > 0:
+            for field in fields:
+                field_data = field.split('=')
+                if len(field_data) > 0:
+                    telemetry_obj[field_data[0]]=field_data[1]
+
+    if properties:
+        properties_obj = {}
+        fields = properties.split(',')
+        if len(fields) > 0:
+            for field in fields:
+                field_data = field.split('=')
+                if len(field_data) > 0:
+                    properties_obj[field_data[0]]=field_data[1]
 
     # optional model Id for auto-provisioning
     try:
@@ -96,7 +118,6 @@ def simulate_device(cmd,app_id:str,device_id:str,device_name=None,instance_of=No
     if model_id != None:
         client.set_model_id(model_id)
 
-    client.set_log_level(IOTCLogLevel.IOTC_LOGGING_ALL)
     client.on(IOTCEvents.IOTC_PROPERTIES, on_props)
     client.on(IOTCEvents.IOTC_COMMAND, on_commands)
     client.on(IOTCEvents.IOTC_ENQUEUED_COMMAND, on_enqueued_commands)
@@ -115,11 +136,12 @@ def simulate_device(cmd,app_id:str,device_id:str,device_name=None,instance_of=No
 
     async def main():
         await client.connect()
+        print("Device connected!")
+        if properties_obj:
+            await client.send_property({k: (str(randint(20, 45)) if v == "number" else get_random_string(6)) for (k,v) in properties_obj.items()})
         while client.is_connected():
-            await client.send_telemetry({
-                'temperature': str(randint(20, 45)),
-                'pressure': str(randint(20, 45))
-            })
+            if telemetry_obj:
+                await client.send_telemetry({k: (str(randint(20, 45)) if v == "number" else get_random_string(6)) for (k,v) in telemetry_obj.items()})
             await asyncio.sleep(3)
         
 
