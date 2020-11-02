@@ -23,6 +23,8 @@ def mode2_iot_login_handler(cmd, namespace):
             elif 'dps_name' in args:
                 iot_cmd_type = 'DPS'
                 entity_value = args['dps_name']
-
+            if 'id_scope' in args and 'device_key' in args:
+                iot_cmd_type = 'IoT Hub'
+                entity_value = args['id_scope']
             if not any([login_value, entity_value]):
                 raise CLIError(error_no_hub_or_login_on_input(iot_cmd_type))

@@ -530,6 +530,16 @@ def load_arguments(self, _):
         )
 
     with self.argument_context("iot device") as context:
+        context.argument(
+            "id_scope",
+            options_list=["--id-scope","--s"],
+            help="Unique identifier for the specific provisioning service to use. Mainly needed for IoT Central."
+            )
+        context.argument(
+        "device_key",
+        options_list=["--device-key","--dk"],
+        help="Device specific symmetric key"
+        )
         context.argument("data", options_list=["--data", "--da"], help="Message body.")
         context.argument(
             "properties",

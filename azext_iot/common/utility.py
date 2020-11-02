@@ -25,6 +25,8 @@ from datetime import datetime
 from knack.log import get_logger
 from knack.util import CLIError
 
+from azext_iot.dps.services import global_service as dps_global_service
+
 logger = get_logger(__name__)
 
 
@@ -524,3 +526,9 @@ def generate_key(byte_length=32):
         key += chr(random.randrange(1, 128))
         byte_length -= 1
     return base64.b64encode(key.encode()).decode("utf-8")
+
+
+def get_hub_from_dps(id_scope:str,device_key:str,device_id:str):
+    hub_details = dps_global_service.get_registration_state(id_scope,device_key,device_id)
+    hub_cstring = "HostName={};DeviceId={};SharedAccessKey={}".format(hub_details['assignedHub'], device_id,device_key)
+    return {'entity':hub_details['assignedHub'],'primarykey':device_key,'policy':None,'cs':hub_cstring}

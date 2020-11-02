@@ -36,10 +36,12 @@ from azext_iot.common.utility import (
     init_monitoring,
     process_json_arg,
     ensure_min_version,
-    generate_key
+    generate_key,
+    get_hub_from_dps
 )
 from azext_iot._factory import SdkResolver, CloudError
 from azext_iot.operations.generic import _execute_query, _process_top
+from azext_iot.iothub.models.iothub_target import IotHubTarget
 
 
 logger = get_logger(__name__)
@@ -1753,11 +1755,21 @@ def iot_device_send_message(
     resource_group_name=None,
     login=None,
     qos=1,
+    id_scope=None,
+    device_key=None
 ):
     discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
     return _iot_device_send_message(
         target=target,
         device_id=device_id,
@@ -1820,11 +1832,20 @@ def iot_device_send_message_http(
     headers=None,
     resource_group_name=None,
     login=None,
+    id_scope=None,
+    device_key=None
 ):
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))   
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
+
     return _iot_device_send_message_http(target, device_id, data, headers)
 
 
@@ -1841,12 +1862,19 @@ def _iot_device_send_message_http(target, device_id, data, headers=None):
 
 
 def iot_c2d_message_complete(
-    cmd, device_id, etag, hub_name=None, resource_group_name=None, login=None
+    cmd, device_id, etag, hub_name=None, resource_group_name=None, login=None,id_scope=None,device_key=None
 ):
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
     return _iot_c2d_message_complete(target, device_id, etag)
 
 
@@ -1863,12 +1891,20 @@ def _iot_c2d_message_complete(target, device_id, etag):
 
 
 def iot_c2d_message_reject(
-    cmd, device_id, etag, hub_name=None, resource_group_name=None, login=None
+    cmd, device_id, etag, hub_name=None, resource_group_name=None, login=None,id_scope=None,
+    device_key=None
 ):
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
     return _iot_c2d_message_reject(target, device_id, etag)
 
 
@@ -1885,12 +1921,20 @@ def _iot_c2d_message_reject(target, device_id, etag):
 
 
 def iot_c2d_message_abandon(
-    cmd, device_id, etag, hub_name=None, resource_group_name=None, login=None
+    cmd, device_id, etag, hub_name=None, resource_group_name=None, login=None,id_scope=None,
+    device_key=None
 ):
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
     return _iot_c2d_message_abandon(target, device_id, etag)
 
 
@@ -1916,6 +1960,8 @@ def iot_c2d_message_receive(
     abandon=None,
     complete=None,
     reject=None,
+    id_scope=None,
+    device_key=None
 ):
     ack = None
     ack_vals = [abandon, complete, reject]
@@ -1931,10 +1977,17 @@ def iot_c2d_message_receive(
         elif reject:
             ack = SettleType.reject.value
 
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
     return _iot_c2d_message_receive(target, device_id, lock_timeout, ack)
 
 
@@ -2037,6 +2090,8 @@ def iot_c2d_message_send(
     repair=False,
     resource_group_name=None,
     login=None,
+    id_scope=None,
+    device_key=None
 ):
     from azext_iot.common.deps import ensure_uamqp
     from azext_iot.common.utility import validate_min_python_version
@@ -2051,10 +2106,17 @@ def iot_c2d_message_send(
     config = cmd.cli_ctx.config
     ensure_uamqp(config, yes, repair)
 
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
 
     if properties:
         properties = validate_key_value_pairs(properties)
@@ -2101,6 +2163,8 @@ def iot_simulate_device(
     properties=None,
     resource_group_name=None,
     login=None,
+    id_scope=None,
+    device_key=None
 ):
     import sys
     import uuid
@@ -2129,10 +2193,18 @@ def iot_simulate_device(
     user_properties = validate_key_value_pairs(properties) or {}
     properties_to_send.update(user_properties)
 
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
+    
     token = None
 
     class generator(object):
@@ -2186,12 +2258,20 @@ def iot_simulate_device(
 
 
 def iot_c2d_message_purge(
-    cmd, device_id, hub_name=None, resource_group_name=None, login=None,
+    cmd, device_id, hub_name=None, resource_group_name=None, login=None,id_scope=None,
+    device_key=None
 ):
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
     resolver = SdkResolver(target=target)
     service_sdk = resolver.get_sdk(SdkType.service_sdk)
 
@@ -2233,7 +2313,7 @@ def iot_device_export(
     blob_container_uri,
     include_keys=False,
     storage_authentication_type=None,
-    resource_group_name=None,
+    resource_group_name=None
 ):
     from azext_iot._factory import iot_hub_service_factory
     from azure.mgmt.iothub import __version__ as iot_sdk_version
@@ -2288,6 +2368,7 @@ def iot_device_import(
     from azure.mgmt.iothub import __version__ as iot_sdk_version
 
     client = iot_hub_service_factory(cmd.cli_ctx)
+
     discovery = IotHubDiscovery(cmd)
     target = discovery.get_target(
         hub_name=hub_name, resource_group_name=resource_group_name
@@ -2338,13 +2419,22 @@ def iot_device_upload_file(
     hub_name=None,
     resource_group_name=None,
     login=None,
+    id_scope=None,
+    device_key=None
 ):
     from azext_iot.sdk.iothub.device.models import FileUploadCompletionStatus
 
-    discovery = IotHubDiscovery(cmd)
-    target = discovery.get_target(
-        hub_name=hub_name, resource_group_name=resource_group_name, login=login
-    )
+    if id_scope is not None and device_key is not None:
+        try:
+            target = get_hub_from_dps(id_scope, device_key, device_id)
+        except Exception as e:
+            raise CLIError("Invalid DPS credentials provided.\nERROR: {}".format(e))
+        
+    else:
+        discovery = IotHubDiscovery(cmd)
+        target = discovery.get_target(
+            hub_name=hub_name, resource_group_name=resource_group_name, login=login
+        )
 
     resolver = SdkResolver(target=target, device_id=device_id)
     device_sdk = resolver.get_sdk(SdkType.device_sdk)
