@@ -47,17 +47,18 @@ def create_device(
         central_dns_suffix=central_dns_suffix,
     )
 
-def simulate_device(cmd,app_id:str,device_id:str,telemetry=None,properties=None,device_name=None,instance_of=None,token=None,
+def simulate_device(cmd,app_id:str,device_id:str,interval=3,telemetry=None,properties=None,device_name=None,instance_of=None,token=None,
     central_dns_suffix=CENTRAL_ENDPOINT):
     provider = CentralDeviceProvider(cmd=cmd, app_id=app_id, token=token)
     try:
         device = provider.get_device(device_id,central_dns_suffix)
     except:
-        print('Not found')
+        print('Device Not found')
         if not instance_of:
-            raise CLIError('Device does not exist. Must pass a model Id to create it during simulation')
+            raise CLIError('Device does not exist. Must pass a model Id with the "instance_of" parameter to create it during simulation')
             exit(1)
         else:
+            print('Found model Id. Creating device')
             if not device_name:
                 device_name = device_id
             device = provider.create_device(device_id,device_name,instance_of)
@@ -102,7 +103,7 @@ def simulate_device(cmd,app_id:str,device_id:str,telemetry=None,properties=None,
 
 
     async def on_props(propName, propValue):
-        print(propValue)
+        print('Received property "{}" with value: "{}"'.format(propName,propValue))
         return True
 
 
@@ -134,7 +135,7 @@ def simulate_device(cmd,app_id:str,device_id:str,telemetry=None,properties=None,
         while client.is_connected():
             if telemetry_obj:
                 await client.send_telemetry({k: (str(randint(20, 45)) if v == "number" else get_random_string(6)) for (k,v) in telemetry_obj.items()})
-            await asyncio.sleep(3)
+            await asyncio.sleep(interval)
         
 
     asyncio.run(main())

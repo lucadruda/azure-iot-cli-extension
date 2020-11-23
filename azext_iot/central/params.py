@@ -128,14 +128,19 @@ def load_central_arguments(self, _):
             options_list=["--telemetry", "-t"],
             help="The telemetry field names and type to use. Simulation will generate random values for them and will send out every 5 seconds."
             "Available types: ['number','text']"
-            "Example: ['temperature=number,pressure=number,message=text]",
+            "[Example: 'temperature=number,pressure=number,message=text']",
         )
         context.argument(
             "properties",
             options_list=["--properties", "-p"],
             help="The properties field names and type to use. Simulation will generate random values for them."
             "Available types: ['number','text']"
-            "Example: ['manufacturer=text,fanSpeed=number]",
+            "[Example: 'manufacturer=text,fanSpeed=number']",
+        )
+        context.argument(
+            "interval",
+            options_list=["--interval"],
+            help="Time between each telemetry delivery in seconds."
         )
 
     with self.argument_context("iot central edge set-modules") as context:

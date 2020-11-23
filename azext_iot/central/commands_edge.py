@@ -7,35 +7,70 @@
 
 from knack.util import CLIError
 
-from azext_iot.common import utility
 from azext_iot.constants import CENTRAL_ENDPOINT
-from azext_iot.central.providers import CentralDeviceProvider
+from azext_iot.common import utility
+from azext_iot.central.providers import CentralDeviceTemplateProvider
 
 
-def iot_central_edge_set_modules(cmd,app_id: str, device_id:str,content:str,token=None, central_dns_suffix=CENTRAL_ENDPOINT):
-    provider = CentralDeviceProvider(cmd=cmd, app_id=app_id, token=token)
-    try:
-        device = provider.get_device(device_id,central_dns_suffix)
-    except:
-        print('Not found')
-        if not instance_of:
-            raise CLIError('Device does not exist. Must pass a model Id to create it during simulation')
-            exit(1)
-        else:
-            if not device_name:
-                device_name = device_id
-            device = provider.create_device(device_id,device_name,instance_of)
-    credentials=provider.get_device_credentials(device_id)
-    print(credentials)
+def get_edge_template(
+    cmd,
+    app_id: str,
+    device_template_id: str,
+    token=None,
+    central_dns_suffix=CENTRAL_ENDPOINT,
+):
+    provider = CentralDeviceTemplateProvider(cmd=cmd, app_id=app_id, token=token)
+    template = provider.get_device_template(
+        device_template_id=device_template_id, central_dns_suffix=central_dns_suffix
+    )
+    return template.raw_template
 
 
-def iot_central_edge_deployment_metric_show():
-    pass
-def iot_central_edge_deployment_create():
-    pass
-def iot_hub_configuration_show():
-    pass
-def iot_central_edge_deployment_list():
-    pass
-def iot_hub_configuration_delete():
-    pass
+def list_edge_templates(
+    cmd, app_id: str, token=None, central_dns_suffix=CENTRAL_ENDPOINT
+):
+    provider = CentralDeviceTemplateProvider(cmd=cmd, app_id=app_id, token=token)
+    templates = provider.list_device_templates(central_dns_suffix=central_dns_suffix)
+    return {template.id: template.raw_template for template in templates.values()}
+
+
+def map_device_templates(
+    cmd, app_id: str, token=None, central_dns_suffix=CENTRAL_ENDPOINT
+):
+    provider = CentralDeviceTemplateProvider(cmd=cmd, app_id=app_id, token=token)
+    return provider.map_device_templates(central_dns_suffix=central_dns_suffix)
+
+
+def create_edge_template(
+    cmd,
+    app_id: str,
+    device_template_id: str,
+    content: str,
+    token=None,
+    central_dns_suffix=CENTRAL_ENDPOINT,
+):
+    if not isinstance(content, str):
+        raise CLIError("content must be a string: {}".format(content))
+
+    payload = utility.process_json_arg(content, argument_name="content")
+
+    provider = CentralDeviceTemplateProvider(cmd=cmd, app_id=app_id, token=token)
+    template = provider.create_device_template(
+        device_template_id=device_template_id,
+        payload=payload,
+        central_dns_suffix=central_dns_suffix,
+    )
+    return template.raw_template
+
+
+def delete_edge_template(
+    cmd,
+    app_id: str,
+    device_template_id: str,
+    token=None,
+    central_dns_suffix=CENTRAL_ENDPOINT,
+):
+    provider = CentralDeviceTemplateProvider(cmd=cmd, app_id=app_id, token=token)
+    return provider.delete_device_template(
+        device_template_id=device_template_id, central_dns_suffix=central_dns_suffix
+    )

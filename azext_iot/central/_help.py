@@ -118,7 +118,10 @@ def _load_central_devices_help():
         examples:
         - name: Simulate a device
           text: >
-            az iot central device simulate -n {appid} -d {deviceid} -t
+            az iot central device simulate -n {appid} -d {deviceid} -t "temperature=number,pressure=number,message=text"
+        - name: Simulate a device and send initial properties
+          text: >
+            az iot central device simulate -n {appid} -d {deviceid} -t "temperature=number,pressure=number,message=text" -p "manufacturer=text,fanSpeed=number"
     """
 
     helps[
