@@ -70,6 +70,21 @@ def load_central_arguments(self, _):
             "[Stringified JSON Example: {'a': 'b'}] ",
         )
 
+    with self.argument_context("iot central edge-template") as context:
+        context.argument(
+            "edge_template_id",
+            options_list=["--edge-template-id", "--etid"],
+            help="Edge template id. Example: someedgetemplate",
+        )
+        context.argument(
+            "content",
+            options_list=["--content", "-k"],
+            help="Edge template configuration with deployment manifest. "
+            "Provide path to JSON file or raw stringified JSON. "
+            "[File Path Example: ./path/to/file.json] "
+            "[Stringified JSON Example: {'a': 'b'}] ",
+        )
+
     with self.argument_context("iot central api-token") as context:
         context.argument(
             "token_id",
@@ -143,11 +158,19 @@ def load_central_arguments(self, _):
             help="Time between each telemetry delivery in seconds."
         )
 
-    with self.argument_context("iot central edge set-modules") as context:
+    with self.argument_context("iot central device-template") as context:
+        context.argument(
+            "device_template_id",
+            options_list=["--device-template-id", "--dtid"],
+            help="Device template id. Example: somedevicetemplate",
+        )
         context.argument(
             "content",
-            options_list=["--content", "-c"],
-            help="IoT Edge deployment content. Provide file path or raw json.",
+            options_list=["--content", "-k"],
+            help="Configuration for request. "
+            "Provide path to JSON file or raw stringified JSON. "
+            "[File Path Example: ./path/to/file.json] "
+            "[Stringified JSON Example: {'a': 'b'}] ",
         )
 
     with self.argument_context("iot central user") as context:

@@ -36,10 +36,10 @@ def load_central_help():
     _load_central_users_help()
     _load_central_api_token_help()
     _load_central_device_templates_help()
+    _load_central_edge_templates_help()
     _load_central_monitors_help()
     _load_central_command_help()
     _load_central_compute_device_key()
-    _load_central_edge_help()
     # TODO: Delete this by end of Dec 2020
     _load_central_deprecated_commands()
 
@@ -420,6 +420,80 @@ def _load_central_device_templates_help():
     """
 
 
+def _load_central_edge_templates_help():
+    helps[
+        "iot central edge-template"
+    ] = """
+        type: group
+        short-summary: Manage and configure IoT Central edge templates
+    """
+
+    helps[
+        "iot central edge-template create"
+    ] = """
+        type: command
+        short-summary: Create a edge template in IoT Central
+
+        examples:
+        - name: Create an edge template with payload read from a file
+          text: >
+            az iot central edge-template create
+            --app-id {appid}
+            --content {pathtofile}
+            --edge-template-id {edgetemplateid}
+
+        - name: Create an edge template with payload read from raw json
+          text: >
+            az iot central edge-template create
+            --app-id {appid}
+            --content {json}
+            --edge-template-id {edgetemplateid}
+    """
+
+    helps[
+        "iot central edge-template list"
+    ] = """
+    type: command
+    short-summary: Get list of edge templates in an application
+    examples:
+      - name: List of edge templates
+        text: >
+          az iot central edge-template list
+          --app-id {appid}
+
+    """
+
+    helps[
+        "iot central edge-template show"
+    ] = """
+        type: command
+        short-summary: Get an edge template from IoT Central
+
+        examples:
+        - name: Get an edge template
+          text: >
+            az iot central edge-template show
+            --app-id {appid}
+            --edge-template-id {edgetemplateid}
+    """
+
+    helps[
+        "iot central edge-template delete"
+    ] = """
+        type: command
+        short-summary: Delete an edge template from IoT Central
+        long-summary: |
+            Note: this is expected to fail if any devices are still associated to this template.
+
+        examples:
+        - name: Delete an edge template from IoT Central
+          text: >
+            az iot central device-template delete
+            --app-id {appid}
+            --edge-template-id {edgetemplateid}
+    """
+
+
 def _load_central_monitors_help():
 
     helps[
@@ -548,142 +622,6 @@ def _load_central_monitors_help():
               text: >
                 az iot central diagnostics registration-summary --app-id {appid}
         """
-
-
-def _load_central_edge_help():
-    helps[
-      "iot central edge"
-      ] = """
-      type: group
-      short-summary: Manage and configure Edge devices in IoT Central.
-      long-summmary: |
-                    LUDRUDA - TODO
-  """
-
-    helps[
-        "iot central edge set-modules"
-    ] = """
-        type: command
-        short-summary: Set edge modules on a single device.
-        long-summary: |
-                      LUDRUDA - TODO
-        examples:
-        - name: Test edge modules while in development by setting modules on a target device.
-          text: >
-            az iot central edge set-modules --hub-name {iothub_name} --device-id {device_id} --content ../modules_content.json
-    """
-
-    helps[
-        "iot central edge deployment"
-    ] = """
-        type: group
-        short-summary: Manage IoT Edge deployments on IoT Central at scale.
-    """
-
-    helps[
-        "iot central edge deployment create"
-    ] = """
-        type: command
-        short-summary: Create an IoT Edge deployment in a target IoT Hub.
-        long-summary: |
-                      Deployment content is json and in the form of {"modulesContent":{...}} or {"content":{"modulesContent":{...}}}.
-
-                      Edge deployments can be created with user defined metrics for on demand evaluation.
-                      User metrics are json and in the form of {"queries":{...}} or {"metrics":{"queries":{...}}}.
-        examples:
-        - name: Create a deployment with labels (bash syntax example) that applies for devices in 'building 9' and
-                the environment is 'test'.
-          text: >
-            az iot edge deployment create -d {deployment_name} -n {iothub_name}
-            --content modules_content.json
-            --labels '{"key0":"value0", "key1":"value1"}'
-            --target-condition "tags.building=9 and tags.environment='test'"
-            --priority 3
-        - name: Create a deployment with labels (powershell syntax example) that applies for devices tagged with environment 'dev'.
-          text: >
-            az iot edge deployment create -d {deployment_name} -n {iothub_name}
-            --content modules_content.json
-            --labels "{'key':'value'}"
-            --target-condition "tags.environment='dev'"
-        - name: Create a layered deployment that applies for devices tagged with environment 'dev'.
-                Both user metrics and modules content defined inline (powershell syntax example).
-          text: >
-            az iot edge deployment create -d {deployment_name} -n {iothub_name}
-            --content "{'modulesContent':{'`$edgeAgent':{'properties.desired.modules.mymodule0':{ }},'`$edgeHub':{'properties.desired.routes.myroute0':'FROM /messages/* INTO `$upstream'}}}"
-            --target-condition "tags.environment='dev'"
-            --priority 10
-            --metrics "{'queries':{'mymetrik':'SELECT deviceId from devices where properties.reported.lastDesiredStatus.code = 200'}}"
-            --layered
-        - name: Create a layered deployment that applies for devices in 'building 9' and environment 'test'.
-                Both user metrics and modules content defined inline (bash syntax example).
-          text: >
-            az iot edge deployment create -d {deployment_name} -n {iothub_name}
-            --content '{"modulesContent":{"$edgeAgent":{"properties.desired.modules.mymodule0":{ }},"$edgeHub":{"properties.desired.routes.myroute0":"FROM /messages/* INTO $upstream"}}}'
-            --target-condition "tags.building=9 and tags.environment='test'"
-            --metrics '{"queries":{"mymetrik":"SELECT deviceId from devices where properties.reported.lastDesiredStatus.code = 200"}}'
-            --layered
-        - name: Create a layered deployment that applies for devices in 'building 9' and environment 'test'.
-                Both user metrics and modules content defined from file.
-          text: >
-            az iot edge deployment create -d {deployment_name} -n {iothub_name}
-            --content layered_modules_content.json
-            --target-condition "tags.building=9 and tags.environment='test'"
-            --metrics metrics_content.json
-            --layered
-    """
-
-    helps[
-        "iot central edge deployment show"
-    ] = """
-        type: command
-        short-summary: Get the details of an IoT Edge deployment.
-    """
-
-    helps[
-        "iot central edge deployment list"
-    ] = """
-        type: command
-        short-summary: List IoT Edge deployments in an IoT Hub.
-    """
-
-    helps[
-        "iot central edge deployment update"
-    ] = """
-        type: command
-        short-summary: |
-                      Update specified properties of an IoT Edge deployment.
-
-                      Use --set followed by property assignments for updating a deployment.
-
-                      Note: IoT Edge deployment content is immutable. Deployment properties that can be
-                      updated are 'labels', 'metrics', 'priority' and 'targetCondition'.
-        examples:
-        - name: Alter the labels and target condition of an existing edge deployment
-          text: >
-            az iot edge deployment update -d {deployment_name} -n {iothub_name}
-            --set labels='{"purpose":"dev", "owners":"IoTEngineering"}' targetCondition='tags.building=9'
-    """
-
-    helps[
-        "iot central edge deployment delete"
-    ] = """
-        type: command
-        short-summary: Delete an IoT Edge deployment.
-    """
-
-    helps[
-        "iot central edge deployment show-metric"
-    ] = """
-        type: command
-        short-summary: Evaluate a target system metric defined in an IoT Edge deployment.
-        examples:
-        - name: Evaluate the 'appliedCount' system metric
-          text: >
-            az iot edge deployment show-metric -m appliedCount -d {deployment_name} -n {iothub_name} --mt system
-        - name: Evaluate the 'myCustomMetric' user metric
-          text: >
-            az iot edge deployment show-metric -m myCustomMetric -d {deployment_name} -n {iothub_name}
-    """
 
 
 # TODO: Delete this by end of Dec 2020

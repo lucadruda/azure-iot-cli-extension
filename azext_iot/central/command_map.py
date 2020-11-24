@@ -21,6 +21,10 @@ central_device_templates_ops = CliCommandType(
     operations_tmpl="azext_iot.central.commands_device_template#{}"
 )
 
+central_edge_templates_ops = CliCommandType(
+    operations_tmpl="azext_iot.central.commands_edge_template#{}"
+)
+
 central_device_twin_ops = CliCommandType(
     operations_tmpl="azext_iot.central.commands_device_twin#{}"
 )
@@ -115,22 +119,16 @@ def load_central_commands(self, _):
             "show", "device_twin_show",
         )
     
-    with self.command_group("iot central edge", command_type=central_edge_ops,is_preview=True) as cmd_group:
-        cmd_group.command("set-modules", "iot_central_edge_set_modules")
-
     with self.command_group(
-        "iot central edge deployment", command_type=central_edge_ops,is_preview=True
+        "iot central edge-template",
+        command_type=central_edge_templates_ops,
+        is_preview=True,
     ) as cmd_group:
-        cmd_group.command("show-metric", "iot_central_edge_deployment_metric_show")
-        cmd_group.command("create", "iot_central_edge_deployment_create")
-        cmd_group.show_command("show", "iot_hub_configuration_show")
-        cmd_group.command("list", "iot_central_edge_deployment_list")
-        cmd_group.command("delete", "iot_hub_configuration_delete")
-        cmd_group.generic_update_command(
-            "update",
-            getter_name="iot_hub_configuration_show",
-            setter_name="iot_hub_configuration_update",
-        )
+        cmd_group.command("list", "list_edge_templates")
+        # cmd_group.command("map", "map_device_templates")
+        cmd_group.show_command("show", "get_edge_template")
+        cmd_group.command("create", "create_edge_template")
+        cmd_group.command("delete", "delete_edge_template")
 
     # TODO: Delete this by end of Dec 2020
     _load_central_deprecated_commands(self, _)

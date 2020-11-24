@@ -55,7 +55,7 @@ class CentralEdgeTemplateProvider:
         self, central_dns_suffix=CENTRAL_ENDPOINT,
     ):
         templates = central_services.edge_template.list_edge_templates(
-            cmd=self._cmd, app_id=self._app_id, token=self._token
+            cmd=self._cmd, app_id=self._app_id, token=self._token,central_dns_suffix=central_dns_suffix
         )
 
         self._edge_templates.update({template.id: template for template in templates})

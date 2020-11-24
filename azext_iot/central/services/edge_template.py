@@ -54,7 +54,7 @@ def list_edge_templates(
     cmd, app_id: str, token: str, central_dns_suffix=CENTRAL_ENDPOINT,
 ) -> List[Template]:
     """
-    Get a list of all device templates in IoTC
+    Get a list of all edge templates in IoTC
 
     Args:
         cmd: command passed into az
@@ -70,7 +70,7 @@ def list_edge_templates(
     url = "https://{}.{}/{}".format(app_id, central_dns_suffix, BASE_PATH)
     headers = _utility.get_headers(token, cmd)
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers,verify=False)
 
     result = _utility.try_extract_result(response)
 
@@ -89,12 +89,12 @@ def create_edge_template(
     central_dns_suffix=CENTRAL_ENDPOINT,
 ) -> Template:
     """
-    Create a device template in IoTC
+    Create an edge template in IoTC
 
     Args:
         cmd: command passed into az
         app_id: name of app (used for forming request URL)
-        edge_template_id: case sensitive device template id,
+        edge_template_id: case sensitive edge template id,
         payload: see example payload available in
             <repo-root>/azext_iot/tests/central/json/edge_template_int_test.json
             or check here for more information
@@ -124,12 +124,12 @@ def delete_edge_template(
     central_dns_suffix=CENTRAL_ENDPOINT,
 ) -> dict:
     """
-    Delete a device template from IoTC
+    Delete an edge template from IoTC
 
     Args:
         cmd: command passed into az
         app_id: name of app (used for forming request URL)
-        edge_template_id: case sensitive device template id,
+        edge_template_id: case sensitive edge template id,
         token: (OPTIONAL) authorization token to fetch device details from IoTC.
             MUST INCLUDE type (e.g. 'SharedAccessToken ...', 'Bearer ...')
         central_dns_suffix: {centralDnsSuffixInPath} as found in docs
