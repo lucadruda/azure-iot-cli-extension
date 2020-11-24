@@ -18,7 +18,6 @@ import sys
 import re
 import hmac
 import hashlib
-import random
 
 from threading import Event, Thread
 from datetime import datetime
@@ -521,11 +520,13 @@ def compute_device_key(primary_key, registration_id):
 
 
 def generate_key(byte_length=32):
-    key = ""
-    while byte_length > 0:
-        key += chr(random.randrange(1, 128))
-        byte_length -= 1
-    return base64.b64encode(key.encode()).decode("utf-8")
+    """
+    Generate cryptographically secure device key.
+    """
+    import secrets
+
+    token_bytes = secrets.token_bytes(byte_length)
+    return base64.b64encode(token_bytes).decode("utf8")
 
 
 def get_hub_from_dps(id_scope:str,device_key:str,device_id:str):

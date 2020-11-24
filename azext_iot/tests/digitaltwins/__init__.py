@@ -12,8 +12,11 @@ from azure.cli.testsdk import LiveScenarioTest
 from azext_iot.common.embedded_cli import EmbeddedCLI
 
 
-MOCK_RESOURCE_TAGS = "a=b;c=d"
-MOCK_ENDPOINT_TAGS = "key0=value0;key1=value1;"
+MOCK_RESOURCE_TAGS = "a=b c=d"
+MOCK_RESOURCE_TAGS_DICT = {"a": "b", "c": "d"}
+MOCK_DEAD_LETTER_SECRET = (
+    "https://accountname.blob.core.windows.net/containerName?sasToken"
+)
 
 
 def generate_resource_id():
@@ -22,8 +25,8 @@ def generate_resource_id():
 
 class DTLiveScenarioTest(LiveScenarioTest):
     role_map = {
-        "owner": "Azure Digital Twins Owner (Preview)",
-        "reader": "Azure Digital Twins Reader (Preview)",
+        "owner": "Azure Digital Twins Data Owner",
+        "reader": "Azure Digital Twins Data Reader",
     }
 
     def __init__(self, test_scenario):
@@ -64,7 +67,9 @@ class DTLiveScenarioTest(LiveScenarioTest):
                 "Digital Twins CLI tests requires at least 'azext_iot_testrg' for resource deployment."
             )
 
-        self._rg_loc = self.embedded_cli.invoke("group show --name {}".format(self._rg)).as_json()["location"]
+        self._rg_loc = self.embedded_cli.invoke(
+            "group show --name {}".format(self._rg)
+        ).as_json()["location"]
 
     @property
     def current_user(self):
